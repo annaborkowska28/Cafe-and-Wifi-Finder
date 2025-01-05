@@ -2,9 +2,6 @@ from flask import Flask,render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean
-from wtforms import StringField, SubmitField
-from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired
 from flask_bootstrap import Bootstrap5
 import os
 from dotenv import load_dotenv
@@ -51,18 +48,10 @@ class Cafe(db.Model):
 #     db.create_all()
 
 
-class CafeForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    submit = SubmitField('Add Cafe')
-
-    def validate_on_submit(self):
-        pass
-
 
 #--------------------- HOME PAGE WITH ALL CAFES ------------
 @app.route("/")
 def home():
-    all_cafes = Cafe.query.all()
 #retrieve all café records from the database, ordered by their ID,
     all_cafes = Cafe.query.order_by(Cafe.id).all()
 # iterates through the all_cafes list, assigning a ranking to each café based on its position in the list.
@@ -122,17 +111,6 @@ def add_cafe():
         db.session.close_all()
         return redirect(url_for("home"))
     return render_template("add.html")
-
-#----------------- DELETE CAFE ---------------------------
-@app.route("/report-closed/<int:cafe_id>", methods=["DELETE"])
-def delete_cafe(cafe_id):
-    api_key = request.args.get("api-key")
-    if api_key == "TopSecretAPIKey":
-        cafe = db.get_or_404(Cafe, cafe_id)
-        if cafe:
-            db.session.delete(cafe)
-            db.session.commit()
-            return redirect(url_for('home'))
 
 
 if __name__ == '__main__':
