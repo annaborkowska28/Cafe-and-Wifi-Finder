@@ -6,8 +6,7 @@ The Cafe and Wifi project aims to provide a platform for users to discover cafes
 
 - Add new cafes to the database
 
-- 
-  Features that will be added soon:
+Features that will be added soon:
  - Search for cafes based on location, wifi availability, and ratings
 - View detailed information about each cafe, including address, contact information, and user reviews
 - Edit and update existing cafe information
