@@ -25,7 +25,6 @@ class Base(DeclarativeBase):
 load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
 app.config['SECRET_KEY'] = os.getenv('secret_key')
-app.config['SQLALCHEMY_BINDS'] = {'auth': 'sqlite:///users.db'}
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
