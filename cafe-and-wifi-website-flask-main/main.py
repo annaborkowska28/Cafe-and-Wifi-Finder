@@ -34,6 +34,9 @@ class Cafe(db.Model):
     coffee_price: Mapped[str] = mapped_column(String(250), nullable=True)
 
     def to_dict(self):
+        """function that converts an object's attributes into a dictionary. It uses a dictionary comprehension to
+         iterate over the columns of the object's table and creates key-value pairs where the key is
+          the column name and the value is the corresponding attribute value of the object"""
         return {column.name: getattr(self, column.name) for column in self.__table__.columns}
 
 
@@ -104,7 +107,7 @@ def edit():
             cafe_id = request.form['id']
             cafe_to_update = db.get_or_404(Cafe, cafe_id)
             # Debug print to check form data received
-            print("Form Data:", request.form)
+            # print("Form Data:", request.form)
             cafe_to_update.name = request.form['name']
             cafe_to_update.map_url = request.form['map_url']
             cafe_to_update.img_url = request.form['img_url']
@@ -129,7 +132,6 @@ def edit():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
 
 
 
