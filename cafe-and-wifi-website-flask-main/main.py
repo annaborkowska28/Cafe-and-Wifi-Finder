@@ -1,18 +1,11 @@
-from flask import Flask,render_template, request, redirect, url_for
+from flask import Flask,render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean
 from flask_bootstrap import Bootstrap5
 import os
 from dotenv import load_dotenv
-'''
-Install the required packages first: 
-Open the Terminal in PyCharm (bottom left). 
 
-On Windows type:
-python -m pip install -r requirements.txt
-
-'''
 
 app = Flask(__name__)
 bootstrap = Bootstrap5(app)
@@ -86,26 +79,17 @@ def home():
 @app.route("/add", methods=["GET", "POST"])
 def add_cafe():
     if request.method == 'POST':
-        cafe_name = request.form['name']
-        map_url = request.form['map_url']
-        img_url = request.form['img_url']
-        location = request.form['location']
-        has_sockets = int(request.form['has_sockets'])
-        has_toilet = int(request.form['has_toilet'])
-        has_wifi = int(request.form['has_wifi'])
-        can_take_calls = int(request.form['can_take_calls'])
-        seats = request.form['seats']
-        coffee_price = request.form['coffee_price']
-        new_cafe = Cafe(name=cafe_name,
-                        map_url=map_url,
-                        img_url=img_url,
-                        location=location,
-                        has_sockets=has_sockets,
-                        has_toilet=has_toilet,
-                        has_wifi=has_wifi,
-                        can_take_calls=can_take_calls,
-                        seats=seats,
-                        coffee_price=coffee_price)
+        new_cafe = Cafe(
+            name=request.form['name'],
+            map_url=request.form['map_url'],
+            img_url=request.form['img_url'],
+            location=request.form['location'],
+            has_sockets=int(request.form['has_sockets']),
+            has_toilet=int(request.form['has_toilet']),
+            has_wifi=int(request.form['has_wifi']),
+            can_take_calls=int(request.form['can_take_calls']),
+            seats=request.form['seats'],
+            coffee_price=request.form['coffee_price'])
         db.session.add(new_cafe)
         db.session.commit()
         db.session.close_all()
@@ -113,5 +97,39 @@ def add_cafe():
     return render_template("add.html")
 
 
+@app.route('/edit', methods=["GET", "POST"])
+def edit():
+    if request.method == "POST":
+        try:
+            cafe_id = request.form['id']
+            cafe_to_update = db.get_or_404(Cafe, cafe_id)
+            # Debug print to check form data received
+            print("Form Data:", request.form)
+            cafe_to_update.name = request.form['name']
+            cafe_to_update.map_url = request.form['map_url']
+            cafe_to_update.img_url = request.form['img_url']
+            cafe_to_update.location = request.form['location']
+            cafe_to_update.has_sockets = int(request.form['has_sockets'])
+            cafe_to_update.has_toilet = int(request.form['has_toilet'])
+            cafe_to_update.has_wifi = int(request.form['has_wifi'])
+            cafe_to_update.can_take_calls = int(request.form['can_take_calls'])
+            cafe_to_update.seats = request.form['seats']
+            cafe_to_update.coffee_price = request.form['coffee_price']
+            db.session.commit()
+            return redirect(url_for('home'))
+        except KeyError as e:
+            flash(f"Missing form field: {e}")
+            return redirect(url_for('edit', id=request.form['id']))
+    cafe_id = request.args.get('id')
+    cafe_selected = db.get_or_404(Cafe, cafe_id)
+
+    return render_template('edit.html', cafe=cafe_selected)
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+
