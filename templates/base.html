@@ -28,13 +28,39 @@
     />
 
     {% endblock %}
-    {%include 'header.html'%}
+
 
     <title>{% block title %}{% endblock %}</title>
     <link rel="icon" type="image/png" href="static/wifi.png">
   </head>
   <body>
-    {% block content %}{% endblock %}
+  {%include 'navbar.html'%}
 
+  <div class="container mt-4">
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+
+    </div>
+    {% endif %}
+{% endwith %}
+
+</div>
+  {% block content %}{% endblock %}
+
+  <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function() {
+    window.setTimeout(function() {
+     $(".alert").alert('close');
+      }, 2000); // 2 seconds
+       });
+  </script>
   </body>
 </html>
+

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% from 'bootstrap5/form.html' import render_form %}
+
+{% block title %}Edit Cafe{% endblock %}
+
+
+{% block content %}
+
+<h1 class="heading">Edit Cafe</h1>
+
+<div class="container">
+     <div class="clearfix">
+         <img src="{{cafe.img_url}}" class="col-md-6 float-md-end mb-3 ms-md-3"  alt="...">
+<form action="{{ url_for('edit') }}" method="POST">
+
+    <div class="container">
+      <div class="mb-3">
+            <p>Name: </p>
+            <input hidden="hidden" name="id" value="{{cafe.id}}" />
+              <input name="name" type="text" placeholder="New name" value="{{ cafe.name }}" />
+      </div>
+
+      <div class="mb-3">
+      <p>Map URL:</p>
+          <input name="map_url" type="text" placeholder="New map URL" value="{{ cafe.map_url }}" />
+      </div>
+      <div class="mb-3">
+      <p>Location:</p>
+            <input name="location" type="text" placeholder="New location" value="{{ cafe.location }}" />
+      </div>
+        <div class="mb-3">
+      <p>Image URL:</p>
+            <input name="img_url" type="text" placeholder="New img URL" value="{{ cafe.img_url }}" >
+        </div>
+      <div class="form-check mb-4" style="margin-top: 1.5rem;">
+          {% if cafe.has_sockets %} {% endif %}
+                            <input class="form-check-input"
+                                   id="has_sockets"
+                                   name="has_sockets"
+                                   type="checkbox"
+                                   value=1>
+
+                            <input id='has_socketsHidden' type='hidden' value=0 name='has_sockets'>
+                            <label class="form-check-label" for="has_sockets">Sockets Available?</label></div>
+
+                        <div class="form-check mb-4">
+                            {% if cafe.has_toilet %}{% endif %}
+                            <input class="form-check-input"
+                                                            id="has_toilet"
+                                                            name="has_toilet"
+                                                            type="checkbox"
+                                                            value=1>
+                            <input id='has_toiletHidden' type='hidden' value=0 name='has_toilet'>
+
+
+                            <label class="form-check-label" for="has_toilet">Toilets Available?</label></div>
+                        <div class="form-check mb-4">
+                            {% if cafe.has_wifi %} {% endif %}
+                            <input class="form-check-input"
+                                                            id="has_wifi"
+                                                            name="has_wifi"
+                                                            type="checkbox"
+                                                            value=1>
+                            <input id='has_wifiHidden' type='hidden' value=0 name='has_wifi'> <label
+                                class="form-check-label" for="has_wifi">Wifi Available?</label></div>
+
+                        <div class="form-check mb-4">
+                            {% if cafe.can_take_calls %}{% endif %}
+                            <input class="form-check-input"
+                                                            id="can_take_calls"
+                                                            name="can_take_calls"
+                                                            type="checkbox"
+                                                            value=1>
+                            <input id='can_take_callsHidden' type='hidden' value=0 name='can_take_calls'>
+                            <label class="form-check-label" for="can_take_calls">Call taking Available?</label></div>
+
+      <div class="mb-3">
+      <p>Number of seats:</p>
+      <input hidden="hidden" name="id" value="{{cafe.id}}" />
+            <input name="seats" type="text" placeholder="New number of seats"  value="{{ cafe.seats }}" />
+      </div>
+      <div class="mb-3">
+      <p>Coffee price:</p>
+      <input hidden="hidden" name="id" value="{{cafe.id}}" />
+            <input name="coffee_price" type="text" placeholder="New coffee price" value="{{ cafe.coffee_price }}" />
+      </div>
+
+
+      <button type="submit">Change</button>
+    </div>
+    </form>
+     </div>
+</div>
+
+{%endblock%}

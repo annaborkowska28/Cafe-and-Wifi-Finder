@@ -66,7 +66,11 @@
             <div class="col-lg-4 d-flex justify-content-center mt-5 align-items-stretch">
                 <div class="card" style="width: 25rem;">
                     <img src="{{ cafe.img_url }}" style="height:400px" class="card-img-top">
+                    {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('delete', id=cafe.id) }}">Delete</a>
+
                             <a href="{{ url_for('edit', id=cafe.id) }}">Edit </a>
+                    {%endif%}
 
                     <div class="card-body">
                         <h5 class="card-title">{{ cafe.name }}</h5>

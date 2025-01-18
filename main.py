@@ -1,10 +1,14 @@
-from flask import Flask,render_template, request, redirect, url_for, flash
+from flask import Flask,render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean
 from flask_bootstrap import Bootstrap5
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+
 import os
 from dotenv import load_dotenv
+
 
 
 app = Flask(__name__)
@@ -16,10 +20,21 @@ load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
 app.config['SECRET_KEY'] = os.getenv('secret_key')
 db = SQLAlchemy(model_class=Base)
+
 db.init_app(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 
 
 # CREATE TABLE
+
+class User(db.Model, UserMixin):
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(250), nullable=False)
+    email: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    password: Mapped[str] = mapped_column(String(250), nullable=False)
 class Cafe(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(250), nullable=False)
@@ -42,6 +57,74 @@ class Cafe(db.Model):
 
 # with app.app_context():
 #     db.create_all()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == "POST":
+
+        email = request.form.get('email')
+        result = db.session.execute(db.select(User).where(User.email == email))
+
+        # Note, email in db is unique so will only have one result.
+        user = result.scalar()
+        if user:
+            # User already exists
+            flash("You've already signed up with that email, log in instead!")
+            return redirect(url_for('login'))
+
+        hash_and_salted_password = generate_password_hash(
+            request.form.get('password'),
+            method='pbkdf2:sha256',
+            salt_length=8
+        )
+        new_user = User(
+            email=request.form.get('email'),
+            password=hash_and_salted_password,
+            username=request.form.get('username')
+        )
+        db.session.add(new_user)
+        db.session.commit()
+        login_user(new_user)
+        flash('Registration successful! Welcome!')
+        return redirect(url_for("home"))
+
+    return render_template("register.html", logged_in=current_user.is_authenticated)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        result = db.session.execute(db.select(User).where(User.email == email))
+        user = result.scalar()
+
+        # Email doesn't exist or password incorrect.
+        if not user:
+            flash("That email does not exist, please try again.")
+            return redirect(url_for('login'))
+        elif not check_password_hash(user.password, password):
+            flash('Password incorrect, please try again.')
+            return redirect(url_for('login'))
+        else:
+            login_user(user)
+            flash(f'Login successful! Welcome back!')
+            return redirect(url_for('home'))
+    return render_template("login.html", logged_in=current_user.is_authenticated)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    session.clear()  # This will clear all session data
+    flash('You have been logged out. See you again soon!')
+    return redirect(url_for('home'))
 
 
 
@@ -80,6 +163,7 @@ def home():
 
 #------------------------- ADD NEW CAFE ----------------------------------------
 @app.route("/add", methods=["GET", "POST"])
+@login_required
 def add_cafe():
     if request.method == 'POST':
         new_cafe = Cafe(
@@ -101,6 +185,7 @@ def add_cafe():
 
 
 @app.route('/edit', methods=["GET", "POST"])
+@login_required
 def edit():
     if request.method == "POST":
         try:
@@ -129,6 +214,25 @@ def edit():
     return render_template('edit.html', cafe=cafe_selected)
 
 
+@app.route('/delete')
+@login_required
+def delete():
+    cafe_id = request.args.get('id')
+    cafe_to_delete = db.get_or_404(Cafe, cafe_id)
+    db.session.delete(cafe_to_delete)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+
+@app.route('/search')
+def search():
+    location = request.args.get('location').lower()
+    if location:
+        cafes = Cafe.query.filter(Cafe.location.ilike(f'{location}')).all()
+    else:
+        cafes = []
+
+    return render_template('search.html', cafes=cafes, location=location)
 
 if __name__ == '__main__':
     app.run(debug=True)
